@@ -95,7 +95,7 @@ public class App {
         Iterator<JSONObject> iterator = users.iterator();
         while (iterator.hasNext()) {
             JSONObject user = iterator.next();
-            long id = (long) user.get("steamid");
+            Long id = Long.valueOf( (String) user.get("steamid") );
             id2JSON.put(id, user);
         }
 
@@ -120,7 +120,7 @@ public class App {
         Iterator<JSONObject> iterator = friends.iterator();
         while (iterator.hasNext()) {
             JSONObject friend = iterator.next();
-            long id = (long) friend.get("steamid");
+            Long id = Long.valueOf( (String) friend.get("steamid") );
             idsToProceed.add(id);
         }
     }
