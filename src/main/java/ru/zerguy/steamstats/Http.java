@@ -18,6 +18,7 @@ public class Http {
     private static final String API_ENDPOINT = "http://api.steampowered.com/";
 
     private static final int CSGO_ID = 730;
+    private static final int SLEEP_TIME = 500;
 
     public static String getUsersInfo(List<Long> steamIds) {
         return getResponse(generatePlayerSummariesUrl(steamIds));
@@ -62,7 +63,7 @@ public class Http {
 
     private static void makePauseBetweenRequests() {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(SLEEP_TIME);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

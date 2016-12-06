@@ -49,13 +49,19 @@ public class App {
                     continue;
 
                 proceededIds.add(userId);
+                System.out.println("proceeding " + userId);
 
                 JSONObject userJson = id2JSON.get(userId);
                 loadUserFriends(userId, userJson, idsToProceed);
                 loadUserGameStats(userId, userJson);
 
                 IndexResponse response = client.prepareIndex("steam", "player").setSource(userJson.toString()).get();
+                System.out.println("added      " + userId);
+                System.out.println("Users proceeded: " + proceededIds.size());
             }
+
+            if (proceededIds.size() > 100)
+                break;
         }
 
         System.out.println("Closing connection");
@@ -95,7 +101,7 @@ public class App {
         Iterator<JSONObject> iterator = users.iterator();
         while (iterator.hasNext()) {
             JSONObject user = iterator.next();
-            Long id = Long.valueOf( (String) user.get("steamid") );
+            Long id = Long.valueOf((String) user.get("steamid"));
             id2JSON.put(id, user);
         }
 
@@ -104,6 +110,9 @@ public class App {
 
     private void loadUserGameStats(final Long userId, final JSONObject userJson) {
         JSONObject responseJson = parseString(Http.getUserGameStats(userId));
+        if(responseJson == null)
+            return;
+
         JSONObject playerStats = (JSONObject) responseJson.get("playerstats");
         JSONArray stats = (JSONArray) playerStats.get("stats");
 
@@ -112,6 +121,9 @@ public class App {
 
     private void loadUserFriends(final Long userId, final JSONObject userJson, final Queue<Long> idsToProceed) {
         JSONObject responseJson = parseString(Http.getUsersFriends(userId));
+        if(responseJson == null)
+            return;
+
         JSONObject friendsList = (JSONObject) responseJson.get("friendslist");
         JSONArray friends = (JSONArray) friendsList.get("friends");
 
@@ -120,12 +132,15 @@ public class App {
         Iterator<JSONObject> iterator = friends.iterator();
         while (iterator.hasNext()) {
             JSONObject friend = iterator.next();
-            Long id = Long.valueOf( (String) friend.get("steamid") );
+            Long id = Long.valueOf((String) friend.get("steamid"));
             idsToProceed.add(id);
         }
     }
 
     private JSONObject parseString(final String json) {
+        if(json == null)
+            return null;
+
         try {
             return (JSONObject) jsonParser.parse(json);
         } catch (ParseException e) {
