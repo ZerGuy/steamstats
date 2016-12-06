@@ -19,8 +19,40 @@ public class Http {
 
     private static final int CSGO_ID = 730;
 
-    public static Object getUsersInfo(List<Long> steamIds) {
+    public static String getUsersInfo(List<Long> steamIds) {
         String url = generatePlayerSummariesUrl(steamIds);
+        HttpResponse response = sendGet(url);
+
+        if (getStatusCode(response) != 200)
+            return null;
+
+        try {
+            return getBody(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Couldn't get body from response");
+            return null;
+        }
+    }
+
+    public static String getUsersFriends(final Long user) {
+        String url = generateFriendListUrl(user);
+        HttpResponse response = sendGet(url);
+
+        if (getStatusCode(response) != 200)
+            return null;
+
+        try {
+            return getBody(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Couldn't get body from response");
+            return null;
+        }
+    }
+
+    public static String getUserGameStats(final Long user) {
+        String url = generateGameStatsUrl(user);
         HttpResponse response = sendGet(url);
 
         if (getStatusCode(response) != 200)
@@ -59,7 +91,7 @@ public class Http {
         StringBuilder result = new StringBuilder();
         String line = "";
         while ((line = rd.readLine()) != null) {
-            result.append(line);
+            result.append(line.trim());
         }
 
         return result.toString();
