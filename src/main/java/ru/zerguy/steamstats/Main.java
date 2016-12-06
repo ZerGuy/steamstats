@@ -17,10 +17,18 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 public class Main {
 
+    public static final String MY_STEAM_ID = "76561198023043869";
+
+
     public static void main(String[] args) throws IOException {
 
         TransportClient client = new PreBuiltTransportClient(Settings.EMPTY)
                 .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+
+
+
+
+
 
 
         Map<String, Object> json = new HashMap<String, Object>();
