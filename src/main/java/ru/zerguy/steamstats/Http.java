@@ -20,7 +20,10 @@ public class Http {
     private static final int CSGO_ID = 730;
 
     public static String getUsersInfo(List<Long> steamIds) {
-        String url = generatePlayerSummariesUrl(steamIds);
+        return getResponse(generatePlayerSummariesUrl(steamIds));
+    }
+
+    private static String getResponse(final String url) {
         HttpResponse response = sendGet(url);
 
         if (getStatusCode(response) != 200)
@@ -36,38 +39,16 @@ public class Http {
     }
 
     public static String getUsersFriends(final Long user) {
-        String url = generateFriendListUrl(user);
-        HttpResponse response = sendGet(url);
-
-        if (getStatusCode(response) != 200)
-            return null;
-
-        try {
-            return getBody(response);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Couldn't get body from response");
-            return null;
-        }
+        return getResponse(generateFriendListUrl(user));
     }
 
     public static String getUserGameStats(final Long user) {
-        String url = generateGameStatsUrl(user);
-        HttpResponse response = sendGet(url);
-
-        if (getStatusCode(response) != 200)
-            return null;
-
-        try {
-            return getBody(response);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Couldn't get body from response");
-            return null;
-        }
+        return getResponse(generateGameStatsUrl(user));
     }
 
     private static HttpResponse sendGet(String url) {
+        makePauseBetweenRequests();
+
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
 
@@ -76,6 +57,14 @@ public class Http {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private static void makePauseBetweenRequests() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
