@@ -71,8 +71,8 @@ public class Http {
         numberOFRequests++;
         double averageTimeBetweenRequests = (timeCurrent - timeStart) / numberOFRequests;
 
-        System.out.println("Elapsed time: " + timeElapsed / 1000);
-        System.out.println("Average time between requests: " + averageTimeBetweenRequests / 1000);
+        System.out.print("Elapsed time: " + (double) timeElapsed / 1000 + ";   ");
+        System.out.println("Avg time between requests: " + averageTimeBetweenRequests / 1000);
 
 
         try {

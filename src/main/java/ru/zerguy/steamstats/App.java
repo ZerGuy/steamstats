@@ -49,14 +49,14 @@ public class App {
                     continue;
 
                 proceededIds.add(userId);
-                System.out.println("proceeding " + userId);
+                System.out.println("Proceeding       " + userId);
 
                 JSONObject userJson = id2JSON.get(userId);
                 loadUserFriends(userId, userJson, idsToProceed);
                 loadUserGameStats(userId, userJson);
 
                 IndexResponse response = client.prepareIndex("steam", "player").setSource(userJson.toString()).get();
-                System.out.println("added      " + userId);
+                System.out.println("Added            " + userId);
                 System.out.println("Users proceeded: " + proceededIds.size());
             }
 
@@ -122,7 +122,7 @@ public class App {
         while (iterator.hasNext()) {
             JSONObject stat = iterator.next();
             String name = (String) stat.get("name");
-            String value = (String) stat.get("value");
+            Long value = (Long) stat.get("value");
             userJson.put(name, value);
         }
 
