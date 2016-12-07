@@ -20,7 +20,7 @@ public class App {
     public static final String TYPE = "player";
 
     //    public static final Long START_STEAM_ID = 76561198023043869L; //ZerGuy
-    public static final Long START_STEAM_ID = 76561198138502675L;
+    public static final Long START_STEAM_ID = 76561198083530795L;
 
     public static final JSONParser jsonParser = new JSONParser();
 
