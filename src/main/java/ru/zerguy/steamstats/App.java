@@ -111,7 +111,7 @@ public class App {
     private void loadUserGameStats(final Long userId, final JSONObject userJson) {
         JSONObject responseJson = parseString(Http.getUserGameStats(userId));
 
-        userJson.put("hasCsGo", userJson != null);
+        userJson.put("hasCsGo", responseJson != null);
         if(responseJson == null)
             return;
 
@@ -132,7 +132,7 @@ public class App {
     private void loadUserFriends(final Long userId, final JSONObject userJson, final Queue<Long> idsToProceed) {
         JSONObject responseJson = parseString(Http.getUsersFriends(userId));
 
-        userJson.put("isFriendListOpen", userJson != null);
+        userJson.put("isFriendListOpen", responseJson != null);
         if(responseJson == null)
             return;
 
