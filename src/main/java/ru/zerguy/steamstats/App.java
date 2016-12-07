@@ -19,7 +19,8 @@ public class App {
     public static final String INDEX = "steam";
     public static final String TYPE = "player";
 
-    public static final Long MY_STEAM_ID = 76561198023043869L;
+    //    public static final Long START_STEAM_ID = 76561198023043869L; //ZerGuy
+    public static final Long START_STEAM_ID = 76561198138502675L;
 
     public static final JSONParser jsonParser = new JSONParser();
 
@@ -38,7 +39,7 @@ public class App {
 
         createIndex();
 
-        idsToProceed.add(MY_STEAM_ID);
+        idsToProceed.add(START_STEAM_ID);
 
         while (!idsToProceed.isEmpty()) {
             loadMoreUsers();
@@ -58,8 +59,10 @@ public class App {
     }
 
     private void proceedUser(Long userId, Map<Long, JSONObject> id2JSON) {
-        if (isInIndex(userId))
+        if (isInIndex(userId)) {
+            loadUserFriends(userId, new JSONObject());
             return;
+        }
 
         proceededIds.add(userId);
         System.out.println("Proceeding       " + userId);
@@ -74,6 +77,9 @@ public class App {
     }
 
     private void createIndex() {
+        if (client.admin().indices().prepareExists(INDEX).execute().actionGet().isExists())
+            return;
+
         client.admin().indices().prepareCreate(INDEX).get();
     }
 
