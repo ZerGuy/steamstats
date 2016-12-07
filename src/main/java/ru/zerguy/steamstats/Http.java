@@ -20,6 +20,10 @@ public class Http {
     private static final int CSGO_ID = 730;
     private static final int SLEEP_TIME = 500;
 
+    private static long timeStart = System.currentTimeMillis();
+    private static long numberOFRequests = 0;
+    private static long timeOfPrevRequest = timeStart;
+
     public static String getUsersInfo(List<Long> steamIds) {
         return getResponse(generatePlayerSummariesUrl(steamIds));
     }
@@ -62,11 +66,22 @@ public class Http {
     }
 
     private static void makePauseBetweenRequests() {
+        long timeCurrent = System.currentTimeMillis();
+        long timeElapsed = timeCurrent - timeOfPrevRequest;
+        numberOFRequests++;
+        double averageTimeBetweenRequests = (timeCurrent - timeStart) / numberOFRequests;
+
+        System.out.println("Elapsed time: " + timeElapsed / 1000);
+        System.out.println("Average time between requests: " + averageTimeBetweenRequests / 1000);
+
+
         try {
             Thread.sleep(SLEEP_TIME);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        timeOfPrevRequest = System.currentTimeMillis();
     }
 
     private static int getStatusCode(HttpResponse response) {

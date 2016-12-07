@@ -110,17 +110,29 @@ public class App {
 
     private void loadUserGameStats(final Long userId, final JSONObject userJson) {
         JSONObject responseJson = parseString(Http.getUserGameStats(userId));
+
+        userJson.put("hasCsGo", userJson != null);
         if(responseJson == null)
             return;
 
         JSONObject playerStats = (JSONObject) responseJson.get("playerstats");
         JSONArray stats = (JSONArray) playerStats.get("stats");
 
+        Iterator<JSONObject> iterator = stats.iterator();
+        while (iterator.hasNext()) {
+            JSONObject stat = iterator.next();
+            String name = (String) stat.get("name");
+            String value = (String) stat.get("value");
+            userJson.put(name, value);
+        }
+
         userJson.put("stats", stats);
     }
 
     private void loadUserFriends(final Long userId, final JSONObject userJson, final Queue<Long> idsToProceed) {
         JSONObject responseJson = parseString(Http.getUsersFriends(userId));
+
+        userJson.put("isFriendListOpen", userJson != null);
         if(responseJson == null)
             return;
 
