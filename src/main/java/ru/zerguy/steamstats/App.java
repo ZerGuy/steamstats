@@ -36,38 +36,52 @@ public class App {
 
         System.out.println("Connection created");
 
+        createIndex();
+
         idsToProceed.add(MY_STEAM_ID);
 
         while (!idsToProceed.isEmpty()) {
-            List<Long> batch = generateBatch();
-            Map<Long, JSONObject> id2JSON = loadUsersBatch(batch);
-
-            for (Long userId : batch) {
-                if (isInIndex(userId))
-                    continue;
-
-                proceededIds.add(userId);
-                System.out.println("Proceeding       " + userId);
-
-                JSONObject userJson = id2JSON.get(userId);
-                loadUserFriends(userId, userJson);
-                loadUserGameStats(userId, userJson);
-
-                client.prepareIndex(INDEX, TYPE, userId.toString()).setSource(userJson.toString()).get();
-                System.out.println("Added            " + userId);
-                System.out.println("Users proceeded: " + proceededIds.size());
-            }
+            loadMoreUsers();
         }
 
         System.out.println("Closing connection");
         client.close();
     }
 
+    private void loadMoreUsers() {
+        List<Long> batch = generateBatch();
+        Map<Long, JSONObject> id2JSON = loadUsersBatch(batch);
+
+        for (Long userId : batch) {
+            proceedUser(userId, id2JSON);
+        }
+    }
+
+    private void proceedUser(Long userId, Map<Long, JSONObject> id2JSON) {
+        if (isInIndex(userId))
+            return;
+
+        proceededIds.add(userId);
+        System.out.println("Proceeding       " + userId);
+
+        JSONObject userJson = id2JSON.get(userId);
+        loadUserFriends(userId, userJson);
+        loadUserGameStats(userId, userJson);
+
+        client.prepareIndex(INDEX, TYPE, userId.toString()).setSource(userJson.toString()).get();
+        System.out.println("Added            " + userId);
+        System.out.println("Users proceeded: " + proceededIds.size());
+    }
+
+    private void createIndex() {
+        client.admin().indices().prepareCreate(INDEX).get();
+    }
+
     private boolean isInIndex(Long userId) {
         if (proceededIds.contains(userId))
             return true;
 
-        if(client.prepareGet(INDEX, TYPE, userId.toString()).get().isExists()) {
+        if (client.prepareGet(INDEX, TYPE, userId.toString()).get().isExists()) {
             proceededIds.add(userId);
             return true;
         }
