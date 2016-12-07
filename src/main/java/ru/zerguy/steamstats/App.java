@@ -1,6 +1,5 @@
 package ru.zerguy.steamstats;
 
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
@@ -17,45 +16,44 @@ import java.util.*;
 
 public class App {
 
+    public static final String INDEX = "steam";
+    public static final String TYPE = "player";
+
     public static final Long MY_STEAM_ID = 76561198023043869L;
 
     public static final JSONParser jsonParser = new JSONParser();
 
     public static final int BATCH_MAX_SIZE = 100;
 
-    public static void main(String[] args) throws IOException {
-        App app = new App();
-        app.start();
-    }
+    private final Queue<Long> idsToProceed = new LinkedList<>();
+    private final Set<Long> proceededIds = new HashSet<>();
+
+    private final TransportClient client = createConnection();
 
     private void start() {
-        TransportClient client = createConnection();
         if (client == null)
             return;
 
         System.out.println("Connection created");
 
-        Queue<Long> idsToProceed = new LinkedList<>();
-        Set<Long> proceededIds = new HashSet<>();
-
         idsToProceed.add(MY_STEAM_ID);
 
         while (!idsToProceed.isEmpty()) {
-            List<Long> batch = generateBatch(idsToProceed);
+            List<Long> batch = generateBatch();
             Map<Long, JSONObject> id2JSON = loadUsersBatch(batch);
 
             for (Long userId : batch) {
-                if (proceededIds.contains(userId))
+                if (isInIndex(userId))
                     continue;
 
                 proceededIds.add(userId);
                 System.out.println("Proceeding       " + userId);
 
                 JSONObject userJson = id2JSON.get(userId);
-                loadUserFriends(userId, userJson, idsToProceed);
+                loadUserFriends(userId, userJson);
                 loadUserGameStats(userId, userJson);
 
-                IndexResponse response = client.prepareIndex("steam", "player").setSource(userJson.toString()).get();
+                client.prepareIndex(INDEX, TYPE, userId.toString()).setSource(userJson.toString()).get();
                 System.out.println("Added            " + userId);
                 System.out.println("Users proceeded: " + proceededIds.size());
             }
@@ -65,7 +63,24 @@ public class App {
         client.close();
     }
 
-    private List<Long> generateBatch(final Queue<Long> idsToProceed) {
+    private boolean isInIndex(Long userId) {
+        if (proceededIds.contains(userId))
+            return true;
+
+        if(client.prepareGet(INDEX, TYPE, userId.toString()).get().isExists()) {
+            proceededIds.add(userId);
+            return true;
+        }
+
+        return false;
+    }
+
+    public static void main(String[] args) throws IOException {
+        App app = new App();
+        app.start();
+    }
+
+    private List<Long> generateBatch() {
         ArrayList<Long> batch = new ArrayList<>();
         int batchSize = (idsToProceed.size() < BATCH_MAX_SIZE) ? idsToProceed.size() : BATCH_MAX_SIZE;
 
@@ -109,11 +124,14 @@ public class App {
         JSONObject responseJson = parseString(Http.getUserGameStats(userId));
 
         userJson.put("hasCsGo", responseJson != null);
-        if(responseJson == null)
+        if (responseJson == null)
             return;
 
         JSONObject playerStats = (JSONObject) responseJson.get("playerstats");
         JSONArray stats = (JSONArray) playerStats.get("stats");
+
+        if (stats == null)
+            return;
 
         Iterator<JSONObject> iterator = stats.iterator();
         while (iterator.hasNext()) {
@@ -126,15 +144,18 @@ public class App {
         userJson.put("stats", stats);
     }
 
-    private void loadUserFriends(final Long userId, final JSONObject userJson, final Queue<Long> idsToProceed) {
+    private void loadUserFriends(final Long userId, final JSONObject userJson) {
         JSONObject responseJson = parseString(Http.getUsersFriends(userId));
 
         userJson.put("isFriendListOpen", responseJson != null);
-        if(responseJson == null)
+        if (responseJson == null)
             return;
 
         JSONObject friendsList = (JSONObject) responseJson.get("friendslist");
         JSONArray friends = (JSONArray) friendsList.get("friends");
+
+        if (friends == null)
+            return;
 
         userJson.put("numberOfFriends", friends.size());
 
@@ -147,7 +168,7 @@ public class App {
     }
 
     private JSONObject parseString(final String json) {
-        if(json == null)
+        if (json == null)
             return null;
 
         try {
