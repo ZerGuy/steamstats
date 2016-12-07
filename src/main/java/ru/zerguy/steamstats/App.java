@@ -59,9 +59,6 @@ public class App {
                 System.out.println("Added            " + userId);
                 System.out.println("Users proceeded: " + proceededIds.size());
             }
-
-            if (proceededIds.size() > 100)
-                break;
         }
 
         System.out.println("Closing connection");
