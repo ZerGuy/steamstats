@@ -18,7 +18,7 @@ public class Http {
     private static final String API_ENDPOINT = "http://api.steampowered.com/";
 
     private static final int CSGO_ID = 730;
-    private static final int SLEEP_TIME = 500;
+    private static final int SLEEP_TIME = 400;
 
     private static long timeStart = System.currentTimeMillis();
     private static long numberOFRequests = 0;
