@@ -171,7 +171,7 @@ public class App {
         }
     }
 
-    private JSONObject parseString(final String json) {
+    public static JSONObject parseString(final String json) {
         if (json == null)
             return null;
 
