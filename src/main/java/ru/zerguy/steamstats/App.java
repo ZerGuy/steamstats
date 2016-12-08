@@ -144,8 +144,6 @@ public class App {
             Long value = (Long) stat.get("value");
             userJson.put(name, value);
         }
-
-        userJson.put("stats", stats);
     }
 
     private void loadUserFriends(final Long userId, final JSONObject userJson) {
