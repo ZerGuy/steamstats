@@ -1,17 +1,12 @@
 package ru.zerguy.steamstats;
 
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.*;
 
 public class App {
@@ -29,7 +24,7 @@ public class App {
     private final Queue<Long> idsToProceed = new LinkedList<>();
     private final Set<Long> proceededIds = new HashSet<>();
 
-    private final TransportClient client = createConnection();
+    private final TransportClient client = ElasticSearchConnectionFactory.createConnection();
 
     private void start() {
         if (client == null)
@@ -111,18 +106,7 @@ public class App {
         return batch;
     }
 
-    private TransportClient createConnection() {
-        System.out.println("Creating connection");
 
-        try {
-            return new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(
-                    new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            System.err.println("Couldn't connect to ES");
-            return null;
-        }
-    }
 
     private Map<Long, JSONObject> loadUsersBatch(final List<Long> batch) {
         JSONObject json = parseString(Http.getUsersInfo(batch));
