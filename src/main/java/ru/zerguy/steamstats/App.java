@@ -14,8 +14,7 @@ public class App {
     public static final String INDEX = "steam";
     public static final String TYPE = "player";
 
-    //    public static final Long START_STEAM_ID = 76561198023043869L; //ZerGuy
-    public static final Long START_STEAM_ID = 76561198032502693L;
+    public static final Long START_STEAM_ID = 76561198023043869L; //ZerGuy
 
     public static final JSONParser jsonParser = new JSONParser();
 
@@ -25,6 +24,7 @@ public class App {
     private final Set<Long> proceededIds = new HashSet<>();
 
     private final TransportClient client = ElasticSearchConnectionFactory.createConnection();
+    private final LocationConverter locationConverter = new LocationConverter();
 
     private void start() {
         if (client == null)
@@ -65,6 +65,7 @@ public class App {
         JSONObject userJson = id2JSON.get(userId);
         loadUserFriends(userId, userJson);
         loadUserGameStats(userId, userJson);
+        locationConverter.addLocation(userJson);
 
         client.prepareIndex(INDEX, TYPE, userId.toString()).setSource(userJson.toString()).get();
         System.out.println("Added            " + userId);
